@@ -29,9 +29,22 @@ rule download_reference:
 def pyplot(code):
     return """python -c "import numpy as np; import matplotlib.pyplot as plt; %s" """ % code
 
+rule trackhub:
+    input:
+        expand("trackhub/{{species}}/{folder}_{name}.bw", name=species_dict["danRer11"], folder=("dedup", "mapped_reads"))
+    output:
+        "trackhub/{species}/trackDb.txt"
+    shell:
+        'chiptools trackdb single ' + ' '.join(f"{folder}_{name}" for folder in ("dedup", "mapped_reads") for name in species_dict["danRer11"]) + '> {output}'
+
 rule all_zebra:
     input:
         ["{species}/logvplots/{place}/{name}.png".format(species=s, place=p, name=n) for s in ["danRer11"] for p in ["first", "last"] for n in species_dict[s]]
+
+rule zebra_gb:
+    input:
+        [f"{species}/dedup_coverage/{name}.bw" for species in ["danRer11"] for name in species_dict[species]],
+        [f"{species}/mapped_reads_coverage/{name}.sortedb.bw" for species in ["danRer11"] for name in species_dict[species]]
         
 rule all:
     input:
@@ -205,6 +218,7 @@ rule combine_summaries:
         paste {input} > {output}
         """
         # paste {input} | awk '{{OFS=","}}{{n=split($3, a, "/");print a[n],$1,$2,$4}}'| head -n -1 >> {output}
+
 rule bamtobed:
     input:
         "{name}.bam"
@@ -233,10 +247,10 @@ rule filter_dup:
 
 rule repeat_coverage_hack:
     input:
-        "{base}/{species}/{folder}/{name}.bed",
+        "{species}/{folder}/{name}.bed",
         "{species}/data/chrom.sizes.txt"
     output:
-        "{base}/{species}/{folder}_coverage/{name}.bdg"
+        "{species}/{folder}_coverage/{name}.bdg"
     wildcard_constraints:
         name="[^/]+",
         folder="[^/]+",
@@ -298,3 +312,46 @@ rule mark_duplicates:
         """
         picard MarkDuplicates {params} INPUT={input} OUTPUT={output.bam} METRICS_FILE={output.metrics} &> {log}
         """
+
+rule get_bdg2bw:
+    output:
+        "src/bdg2bw"
+    shell:
+        """
+        wget https://gist.githubusercontent.com/taoliu/2469050/raw/34476e91ebd3ba9d26345da88fd2a4e7b893deea/bdg2bw -O {output}
+        chmod a+x {output}
+        """
+
+rule create_bw_track:
+    input:
+        "src/bdg2bw",
+        "{species}/{name}.bdg",
+        "{species}/data/chrom.sizes.txt"
+    output:
+        "{species}/{name}.bw"
+    wildcard_constraints:
+        species="[^/]+"
+    shell:
+        "{input}"
+
+rule move_to_trackhub_dedup:
+    input:
+        "{species}/{folder}_coverage/{name}.bw"
+    output:
+        "trackhub/{species}/{folder}_{name}.bw"
+    wildcard_constraints:
+        folder="[^(/,_)]+",
+        species="[^/]+"
+    shell:
+        "mv {input} {output}"
+
+rule move_to_trackhub:
+    input:
+        "{species}/{folder}_coverage/{name}.sortedb.bw",
+    output:
+        "trackhub/{species}/{folder}_{name}.bw"
+    wildcard_constraints:
+        folder="mapped_reads",
+        species="[^/]+"
+    shell:
+        "mv {input} {output}"
