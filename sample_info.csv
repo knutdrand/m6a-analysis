@@ -1,0 +1,13 @@
+Index  #,ID,Organism,Ketnote,Sample Type (m6A-IP),Antibody,Cycles,Contribution,Index Sequence                           
+AD001,EXP13_YJ_001,mouse liver mRNA,IPed,Mouse purified mRNA Millipore antibody 100 ng a,Millipore Polyclonal ABE 572,15,1x,ATCACG
+AD002,EXP13_YJ_002,mouse liver mRNA,IPed,Mouse purified mRNA Millipore antibody 100 ng b   ,Millipore Polyclonal ABE 572,15,1x,CGATGT
+AD003,EXP13_YJ_003,mouse liver mRNA,IPed,Mouse purified mRNA Millipore antibody 10 ng a,Millipore Polyclonal ABE 572,19,1x,TTAGGC
+AD004,EXP13_YJ_004,mouse liver mRNA,IPed,Mouse purified mRNA Millipore antibody 10 ng b     ,Millipore Polyclonal ABE 572,19,1x,TGACCA
+AD005,EXP13_YJ_005,mouse liver mRNA,INPUT,Mouse purified mRNA Input 10 ng,Millipore Polyclonal ABE 572,14,1x,ACAGTG
+AD006,EXP13_YJ_006,mouse liver mRNA,SUP,SUP from sample #3,Millipore Polyclonal ABE 572,14,1x,GCCAAT
+AD007,EXP13_YJ_007,Zebrafish zygote,IPed,Non-Pronase Zebrafish → Total RNA → rRNA depletion → IP → Library,Millipore Polyclonal ABE 572,21,1x,CAGATC
+AD008,EXP13_YJ_008,Zebrafish zygote,IPed,Pronase Zebrafish → Total RNA → rRNA depletion → IP → Library,Millipore Polyclonal ABE 572,21,1x,ACTTGA
+AD009,EXP13_YJ_009,Zebrafish zygote,IPed,Non-Pronase Zebrafish → Total RNA → IP → rRNA depletion → Library,Millipore Polyclonal ABE 572,21,1x,GATCAG
+AD010,EXP13_YJ_010,Zebrafish zygote,IPed,Pronase Zebrafish → Total RNA → IP → rRNA depletion → Library,Millipore Polyclonal ABE 572,21,1x,TAGCTT
+AD011,EXP13_YJ_011,Zebrafish zygote,INPUT,"Non-Pronase Zebrafish → Total RNA → rRNA depletion → Library, as ZF mRNA input",Millipore Polyclonal ABE 572,17,1x,GGCTAC
+AD012,EXP13_YJ_012,Zebrafish zygote,IPed,Pronase Zebrafish → Total RNA → IP → Library,Millipore Polyclonal ABE 572,19,1x,CTTGTA
