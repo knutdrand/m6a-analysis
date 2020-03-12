@@ -20,11 +20,6 @@ species_dict = {"mm10": [], "danRer11": []}
 for sample_name in samples:
     species_dict[get_species(sample_name)].append(sample_name)
 
-rule download_reference:
-    output:
-        "../../Data/{species}/{species}.fa.gz"
-    shell:
-        "wget http://hgdownload.soe.ucsc.edu/goldenPath/{wildcards.species}/bigZips/{wildcards.species}.fa.gz -O {output}"
 
 def pyplot(code):
     return """python -c "import numpy as np; import matplotlib.pyplot as plt; %s" """ % code
@@ -79,7 +74,7 @@ rule gunzip:
     output:
         "{path}"
     wildcard_constraints:
-        path=".*(fa|bed|gdb)"
+        path=".*(fa|bed|gdb|gtf)"
     shell:
         "gunzip {input} --keep"
 
