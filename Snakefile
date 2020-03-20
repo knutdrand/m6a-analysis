@@ -17,24 +17,24 @@ def get_species(sample_name):
     return "danRer11"
 
 species_dict = {"mm10": [], "danRer11": []}
+
 for sample_name in samples:
     species_dict[get_species(sample_name)].append(sample_name)
-
 
 def pyplot(code):
     return """python -c "import numpy as np; import matplotlib.pyplot as plt; %s" """ % code
 
 rule trackhub:
     input:
-        expand("trackhub/{{species}}/{folder}_{name}.bw", name=species_dict["danRer11"], folder=("dedup", "mapped_reads"))
+        lambda wildcards: expand("trackhub/{{species}}/{folder}_{name}.bw", name=species_dict[wildcards.species], folder=("dedup", "mapped_reads"))
     output:
         "trackhub/{species}/trackDb.txt"
     shell:
-        'chiptools trackdb single ' + ' '.join(f"{folder}_{name}" for folder in ("dedup", "mapped_reads") for name in species_dict["danRer11"]) + '> {output}'
+        'chiptools trackdb single {input} > {output}'
 
 rule all_zebra:
     input:
-        ["{species}/logvplots/{place}/{name}.png".format(species=s, place=p, name=n) for s in ["danRer11"] for p in ["first", "last"] for n in species_dict[s]]
+        ["{species}/logvplots/{place}/{name}.png".format(species=s, place=p, name=n) for s in ["danRer11"] for p in ["first", "last"] for n in species_dict[s]],
 
 rule zebra_gb:
     input:
@@ -43,9 +43,10 @@ rule zebra_gb:
         
 rule all:
     input:
-        ["{species}/logvplots/{place}/{name}.png".format(species=s, place=p, name=n) for s in ["danRer11", "mm10"] for p in ["first", "last"] for n in species_dict[s]]
-#        expand("{species}/logvplots/{place}/{name}.png", name=samples, place=["first", "last"], ),
-
+        [f"{species}/logvplots/{place}/{name}.png" for species in ["danRer11", "mm10"] for place in ["first", "last"] for name in species_dict[species]],
+        report(expand("fastqscreen/{name}_screen.png", name=samples), category="contamination"),
+        expand("{species}/reads_fig.svg", species=["danRer11"])
+        # expand("fastqscreen/{name}_screen.png", name=samples)
 
 rule move_data:
     input:
@@ -150,8 +151,10 @@ rule map_hisat:
         data_path + "{species}/hisat/genome.1.ht2",
         workingdir + "all_reads/{name}.fastq.gz"
     output:
-        workingdir + "{species}/mapped_reads/{name}.bam"
+        temp(workingdir + "{species}/mapped_reads/{name}.bam")
     threads: 16
+    resources:
+        mem_gb=10
     shell:
         """hisat2 -x %s{wildcards.species}/hisat/genome -U {input[1]} -p {threads} | samtools view -q 30 -S -b > {output}""" % data_path
 
@@ -218,13 +221,13 @@ rule bamtobed:
     input:
         "{name}.bam"
     output:
-        "{name}.bed"
+        "{name}.bed.gz"
     shell:
-        "samtools view {input} | chiptools rnabam2bed > {output}"
+        "samtools view {input} | chiptools rnabam2bed | gzip > {output}"
 
 rule sort_bed:
     input:
-        "{name}.bed"
+        "{name}.bed.gz"
     output:
         "{name}.sorted.bed"
     resources:
@@ -242,7 +245,7 @@ rule filter_dup:
 
 rule repeat_coverage_hack:
     input:
-        "{species}/{folder}/{name}.bed",
+        "{species}/{folder}/{name}.bed.gz",
         "{species}/data/chrom.sizes.txt"
     output:
         "{species}/{folder}_coverage/{name}.bdg"
@@ -251,7 +254,7 @@ rule repeat_coverage_hack:
         folder="[^/]+",
         species="[^/]+"
     shell:
-        chromosome_grep + " {input[0]} | bedtools slop -i - -g {input[1]} -b 0 | bedtools genomecov -bga -i - -g {input[1]} > {output}"
+        "z" +chromosome_grep + " {input[0]} | bedtools slop -i - -g {input[1]} -b 0 | bedtools genomecov -bga -i - -g {input[1]} > {output}"
 
 rule download_chrom_sizes:
     output:
@@ -350,3 +353,72 @@ rule move_to_trackhub:
         species="[^/]+"
     shell:
         "mv {input} {output}"
+
+rule do_fastq_screen:
+    input:
+        expand("/media/knut/KnutData/200224_NB501273.Project_Li-libs2-2020-02-17/{name}.fastq.gz", name=samples)
+    output:
+        report(expand("fastqscreen/{name}_screen.png", name=samples), category="contamination")
+    shell:
+        "fastq_screen --conf fastq_screen_config.txt --aligner bwa --outdir fastqscreen/ {input}"
+
+rule get_rrnas_bed_file_zebra:
+    input:
+        "../../Data/danRer11/annotation.gtf"
+    output:
+        "danRer11/data/rrnas.bed"
+    shell:
+        """grep -i "rrna" {input} | grep "^[0-9]" | awk '{{OFS="\\t"}}{{print "chr"$1, $4, $5}}' | sortBed -i - | mergeBed -i - > {output}"""
+
+rule get_rrnas_bed_file_mouse:
+    input:
+        "../../Data/mm10/annotation.gtf"
+    output:
+        "mm10/data/rrnas.bed"
+    shell:
+        """grep -i "rrna" {input} | """ + chromosome_grep + """ | awk '{{OFS="\\t"}}{{print $1, $4, $5}}' | sortBed -i - | mergeBed -i - > {output}"""
+
+rule count_rrnas_reads:
+    input:
+        "{species}/{folder}/{name}.bam",
+        "{species}/data/rrnas.bed"
+    output:
+        "{species}/{folder}_rrna_counts/{name}.txt"
+    shell:
+        "intersectBed -abam {input[0]} -b {input[1]} -u -bed | wc -l > {output}"
+
+rule summarize_folder:
+    input:
+        lambda wildcards: expand("{{species}}/dedup_rrna_counts/{name}.txt", name=species_dict[wildcards.species])
+    output:
+        "{species}/dedup_rrna_counts/ALL.txt"
+    shell:
+        "cat {input} > {output}"
+
+rule summarize_folder2:
+    input:
+        lambda wildcards: expand("{{species}}/mapped_reads_rrna_counts/{name}.sortedb.txt", name=species_dict[wildcards.species])
+    output:
+        "{species}/mapped_reads_rrna_counts/ALL.txt"
+    shell:
+        "cat {input} > {output}"
+
+rule mapping_stats:
+    input:
+        "{species}/names.txt",
+        "{species}/mapped_reads_count.txt",
+        "{species}/dedup_count.txt",
+        "{species}/mapped_reads_rrna_counts/ALL.txt",
+        "{species}/dedup_rrna_counts/ALL.txt",
+    output:
+        report("{species}/reads_fig.svg", category="read_counts")
+    shell:
+        "python src/barchart.py all,dedup,rrna,rrna_dedup {input} {output}"
+
+#rule gzip:
+#    input:
+#        "{filename}.bed"
+#    output:
+#        "{filename.bed.gz"
+#    shell:
+#        "gzip {input}"

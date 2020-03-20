@@ -1,0 +1,50 @@
+Mon Mar  9 11:03:29 2020]
+rule map_hisat:
+    input: ../../Data/danRer11/hisat/genome.1.ht2, /media/knut/KnutData/m6a-data/reads/10-YJ-EXP13-010_S10_R1_001.fastq.gz
+    output: /media/knut/KnutData/m6a-data/danRer11/mapped_reads/10-YJ-EXP13-010_S10_R1_001.bam
+    jobid: 57
+    wildcards: species=danRer11, name=10-YJ-EXP13-010_S10_R1_001
+    threads: 7
+
+26999928 reads; of these:
+  26999928 (100.00%) were unpaired; of these:
+    2543023 (9.42%) aligned 0 times
+    20033765 (74.20%) aligned exactly 1 time
+    4423140 (16.38%) aligned >1 times
+90.58% overall alignment rate
+[Mon Mar  9 11:08:44 2020]
+Finished job 57.
+1 of 54 steps (2%) done
+
+[Mon Mar  9 11:08:44 2020]
+rule map_hisat:
+    input: ../../Data/danRer11/hisat/genome.1.ht2, /media/knut/KnutData/m6a-data/reads/7-YJ-EXP13-007_S7_R1_001.fastq.gz
+    output: /media/knut/KnutData/m6a-data/danRer11/mapped_reads/7-YJ-EXP13-007_S7_R1_001.bam
+    jobid: 54
+    wildcards: species=danRer11, name=7-YJ-EXP13-007_S7_R1_001
+    threads: 7
+
+26490714 reads; of these:
+  26490714 (100.00%) were unpaired; of these:
+    3970244 (14.99%) aligned 0 times
+    18302511 (69.09%) aligned exactly 1 time
+    4217959 (15.92%) aligned >1 times
+85.01% overall alignment rate
+[Mon Mar  9 11:13:55 2020]
+Finished job 54.
+2 of 54 steps (4%) done
+
+[Mon Mar  9 11:13:55 2020]
+rule map_hisat:
+    input: ../../Data/danRer11/hisat/genome.1.ht2, /media/knut/KnutData/m6a-data/reads/11-YJ-EXP13-011_S11_R1_001.fastq.gz
+    output: /media/knut/KnutData/m6a-data/danRer11/mapped_reads/11-YJ-EXP13-011_S11_R1_001.bam
+    jobid: 58
+    wildcards: species=danRer11, name=11-YJ-EXP13-011_S11_R1_001
+    threads: 7
+
+21141935 reads; of these:
+  21141935 (100.00%) were unpaired; of these:
+    11388863 (53.87%) aligned 0 times
+    1072116 (5.07%) aligned exactly 1 time
+    8680956 (41.06%) aligned >1 times
+46.13% overall alignment rate

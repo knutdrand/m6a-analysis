@@ -1,5 +1,5 @@
 # from Bio import Entrez
-Entrez.email="knutdrand@gmail.com"
+# Entrez.email="knutdrand@gmail.com"
 entrez_entries = ["NC_017519.1", "NC_014921.1", "NC_010163.1", "NC_013511.1"]
 
 rule myco_genomes:

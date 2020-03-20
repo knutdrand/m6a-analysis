@@ -62,12 +62,21 @@ THREADS		8
 ##
 ## Human - sequences available from
 ## ftp://ftp.ensembl.org/pub/current/fasta/homo_sapiens/dna/
-#DATABASE	Human	/data/public/Genomes/Human_Bowtie/GRCh37/Homo_sapiens.GRCh37
+DATABASE	Human	/home/knut/Data/hg38/hg38.fa
 ##
 ## Mouse - sequence available from
 ## ftp://ftp.ensembl.org/pub/current/fasta/mus_musculus/dna/
-#DATABASE	Mouse	/data/public/Genomes/Mouse/NCBIM37/Mus_musculus.NCBIM37
+DATABASE	Mouse	/home/knut/Data/mm10/mm10.fa.gz
+DATABASE	Rabbit	/home/knut/Data/oryCun2/oryCun2.fa
 ##
+DATABASE
+DATABASE	NC_1	/home/knut/Data/Entrez/NC_010163.1.fa  
+DATABASE	NC_2	/home/knut/Data/Entrez/NC_013511.1.fa  
+DATABASE	NC_3	/home/knut/Data/Entrez/NC_014921.1.fa  
+DATABASE	NC_4	/home/knut/Data/Entrez/NC_017519.1.fa
+
+DATABASE	Zebrafish	/home/knut/Data/danRer11/danRer11.fa
+
 ## Ecoli- sequence available from EMBL accession U00096.2
 #DATABASE	Ecoli	/data/public/Genomes/Ecoli/Ecoli
 ##
