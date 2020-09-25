@@ -1,5 +1,5 @@
 include: "reference_genomes.smk"
-
+import pandas as pd
 data_path = "../../Data/"
 base_path = "/media/knut/KnutData/m6a-data/output/"
 read_path = "all_reads/" # "/media/knut/KnutData/m6a-data/200224_NB501273.Project_Li-libs2-2020-02-17/"
@@ -9,9 +9,11 @@ bam_path = "/media/knut/KnutData/m6a-data/output/"
 # bam_path = base_path+"output/"
 chromosome_grep = "grep -Ew -e 'chr[0-9]{{1,2}}' -e chrX -e chrY"
 
-samples = [s.strip().replace(".fastq.gz", "") for s in open("config.csv")]
+#samples = [s.strip().replace(".fastq.gz", "") for s in open("config.csv")]
+samples = [s.replace(".fastq.gz", "") for s in pd.read_csv("sherif_nels.csv").set_index("filename").index]
 # samples = [s for s in samples if int(s.split("-")[0])<=6]
 def get_species(sample_name):
+    return "mm10"
     if int(sample_name.split("-")[0])<=6:
         return "mm10"
     return "danRer11"
@@ -44,8 +46,9 @@ rule zebra_gb:
 rule all:
     input:
         [f"{species}/logvplots/{place}/{name}.png" for species in ["danRer11", "mm10"] for place in ["first", "last"] for name in species_dict[species]],
-        report(expand("fastqscreen/{name}_screen.png", name=samples), category="contamination"),
-        expand("{species}/reads_fig.svg", species=["danRer11"])
+        [f"{species}/metagene/{name}.png" for species in ["danRer11", "mm10"] for place in ["first", "last"] for name in species_dict[species]],
+        # report(expand("fastqscreen/{name}_screen.png", name=samples), category="contamination"),
+        # expand("{species}/reads_fig.svg", species=["danRer11"])
         # expand("fastqscreen/{name}_screen.png", name=samples)
 
 rule move_data:
@@ -84,6 +87,14 @@ rule download_genes:
         "{species}/data/refGene.txt.gz"
     shell:
         "wget https://hgdownload.soe.ucsc.edu/goldenPath/{wildcards.species}/database/refGene.txt.gz -O {output}"
+
+rule get_genes_bed:
+    input:
+        "{species}/data/refGene.txt.gz"
+    output:
+        "{species}/data/genes.bed"
+    shell:
+        """z%s {input} | awk '{{OFS="\t"}}{{print $3, $5, $6, ".", ".", $4}}' | uniq > {output}""" % chromosome_grep
 
 rule get_first_exon_bed:
     input:
@@ -279,6 +290,15 @@ rule exon_vplots:
         "{species}/vplots/{place}/{name}.png",
     shell:
         "cat {input[0]} | chiptools vplot {input[1]} {output}"
+
+rule metagene:
+    input:
+        workingdir+"{species}/dedup_coverage/{name}.bdg",
+        "{species}/data/refGene.txt.gz"
+    output:
+        "{species}/metagene/{name}.png"
+    shell:
+        "cat {input[0]} | chiptools metagene {input[1]} {output}"
 
 rule exon_logvplots:
     input:
