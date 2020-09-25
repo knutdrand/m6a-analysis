@@ -296,7 +296,7 @@ rule metagene:
         workingdir+"{species}/dedup_coverage/{name}.bdg",
         "{species}/data/refGene.txt.gz"
     output:
-        "{species}/metagene/{name}.png"
+        report("{species}/metagene/{name}.png", category="Metagene")
     shell:
         "cat {input[0]} | chiptools metagene {input[1]} {output}"
 
