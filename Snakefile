@@ -50,7 +50,8 @@ rule zebra_gb:
 rule all:
     input:
         [f"{species}/logvplots/{place}/{name}.png" for species in ["danRer11", "mm10"] for place in ["first", "last"] for name in species_dict[species]],
-        [f"{species}/metagene/{name}.png" for species in ["danRer11", "mm10"] for place in ["first", "last"] for name in species_dict[species]],
+        [f"{species}/metagene/{name}.png" for species in ["danRer11", "mm10"] for name in species_dict[species]],
+        [f"mm10/metaenrichment/{name}.png" for species in ["danRer11", "mm10"] for name in analysis_info.index]
         # report(expand("fastqscreen/{name}_screen.png", name=samples), category="contamination"),
         # expand("{species}/reads_fig.svg", species=["danRer11"])
         # expand("fastqscreen/{name}_screen.png", name=samples)
