@@ -11,6 +11,10 @@ chromosome_grep = "grep -Ew -e 'chr[0-9]{{1,2}}' -e chrX -e chrY"
 
 #samples = [s.strip().replace(".fastq.gz", "") for s in open("config.csv")]
 samples = [s.replace(".fastq.gz", "") for s in pd.read_csv("sherif_nels.csv").set_index("filename").index]
+analysis_info = pd.read_csv("sherif_analysis.csv").set_index("Name")
+print(analysis_info)
+print(analysis_info.index)
+print(analysis_info.loc["WT-rep1"])
 # samples = [s for s in samples if int(s.split("-")[0])<=6]
 def get_species(sample_name):
     return "mm10"
@@ -296,9 +300,18 @@ rule metagene:
         workingdir+"{species}/dedup_coverage/{name}.bdg",
         "{species}/data/refGene.txt.gz"
     output:
-        report("{species}/metagene/{name}.png", category="Metagene")
+        report("{species}/metagene/{name}.png", category="Metagene"),
+        "{species}/metagene/{name}.npy"
     shell:
         "cat {input[0]} | chiptools metagene {input[1]} {output}"
+
+rule metaenrichment:
+    input:
+        lambda wildcards: [wildcards.species + "/metagene/%s.npy" % analysis_info.loc[wildcards.sample].at[v] for v in ("IP", "Input")]
+    output:
+        report("{species}/metaenrichment/{sample}.png", category="Metaenrichment"),
+    script:
+        "scripts/enrichment_plot.py"
 
 rule exon_logvplots:
     input:
