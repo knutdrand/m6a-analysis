@@ -10,8 +10,9 @@ bam_path = "/media/knut/KnutData/m6a-data/output/"
 chromosome_grep = "grep -Ew -e 'chr[0-9]{{1,2}}' -e chrX -e chrY"
 
 #samples = [s.strip().replace(".fastq.gz", "") for s in open("config.csv")]
-samples = [s.replace(".fastq.gz", "") for s in pd.read_csv("sherif_nels.csv").set_index("filename").index]
-analysis_info = pd.read_csv("sherif_analysis.csv").set_index("Name")
+# samples = [s.replace(".fastq.gz", "") for s in pd.read_csv("sherif_nels.csv").set_index("filename").index]
+samples = []
+analysis_info = pd.read_csv(config["analysisinfo"]).set_index("Name")
 print(analysis_info)
 print(analysis_info.index)
 print(analysis_info.loc["WT-rep1"])
@@ -298,21 +299,36 @@ rule exon_vplots:
 
 rule metagene:
     input:
-        workingdir+"{species}/dedup_coverage/{name}.bdg",
+        workingdir+"{species}/{folder}_coverage/{name}.bdg",
         "{species}/data/refGene.txt.gz"
     output:
-        report("{species}/metagene/{name}.png", category="Metagene"),
-        "{species}/metagene/{name}.npy"
+        "{species}/{folder}_metagene/{name}.pkl"
     shell:
-        "cat {input[0]} | chiptools metagene {input[1]} {output}"
+        "bdgtools geneplot metagene {input} -od {output}"
+
+rule all_metagene:
+    input:
+        expand("{{species}}/{{folder}}_metagene/{name}.pkl", name=list(analysis_info["IP"]) + list(analysis_info["Input"]))
+    output:
+        "{species}/{folder}_metagene/all.png"
+    shell:
+        "bdgtools joinfigs metagene {input} -o {output}"
 
 rule metaenrichment:
     input:
-        lambda wildcards: [wildcards.species + "/metagene/%s.npy" % analysis_info.loc[wildcards.sample].at[v] for v in ("IP", "Input")]
+        lambda wildcards: [wildcards.species + "/{folder}_metagene/%s.pkl" % analysis_info.loc[wildcards.sample].at[v] for v in ("IP", "Input")]
     output:
-        report("{species}/metaenrichment/{sample}.png", category="Metaenrichment"),
+        "{species}/{folder}_metaenrichment/{sample}.pkl"
     script:
         "scripts/enrichment_plot.py"
+
+rule all_metaenrichment:
+    input:
+        expand("{{species}}/{{folder}}_metaenrichment/{name}.pkl", name=analysis_info.index)
+    output:
+        "{species}/{folder}_metaenrichment/all.png"
+    shell:
+        "bdgtools joinfigs metagene {input} -o {output}"
 
 rule exon_logvplots:
     input:

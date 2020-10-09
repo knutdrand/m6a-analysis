@@ -1,10 +1,10 @@
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
-
-ip, control = [np.load(f) for f in snakemake.input]
-enrichment = (ip/np.sum(ip))/(control/np.sum(control))
-plt.plot(enrichment)
-plt.vlines([124, 1124], ymin=0.5, ymax=1.5)
-plt.hlines([1], xmin=0, xmax=enrichment.size)
-plt.ylim(0.5, 1.5)
-plt.savefig(snakemake.output[0])
+from bdgtools.plotter import plot
+from bdgtools.aggregateplot import MetaGenePlot
+ip, control = [pd.read_pickle(f) for f in snakemake.input]
+assert ip["x"]==control["x"]
+ip["y"] /= control["y"]
+plot(ip, MetaGenePlot)
+ip.to_pickle(snakemake.output[0])
