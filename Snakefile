@@ -46,7 +46,7 @@ rule all_zebra:
 rule zebra_gb:
     input:
         [f"{species}/dedup_coverage/{name}.bw" for species in ["danRer11"] for name in species_dict[species]],
-        [f"{species}/mapped_reads_coverage/{name}.sortedb.bw" for species in ["danRer11"] for name in species_dict[species]]
+        [f"{species}/sortedb_reads_coverage/{name}.bw" for species in ["danRer11"] for name in species_dict[species]]
         
 rule all:
     input:
@@ -346,9 +346,17 @@ rule sort_bam:
     shell:
         "samtools sort {input} > {output}"
 
-rule mark_duplicates:
+rule move_sorted:
     input:
         workingdir+"{species}/mapped_reads/{sample}.sortedb.bam"
+    output:
+        workingdir+"{species}/sortedb_reads/{sample}.bam"
+    shell:
+        "mv {input} {output}"
+
+rule mark_duplicates:
+    input:
+        workingdir+"{species}/sortedb_reads/{sample}.bam"
     output:
         bam=workingdir+"{species}/dedup/{sample}.bam",
         metrics="{species}/dedup/{sample}.metrics.txt"
@@ -395,7 +403,7 @@ rule move_to_trackhub_dedup:
 
 rule move_to_trackhub:
     input:
-        "{species}/{folder}_coverage/{name}.sortedb.bw",
+        "{species}/{folder}sortedb_coverage/{name}.bw",
     output:
         "trackhub/{species}/{folder}_{name}.bw"
     wildcard_constraints:
@@ -447,7 +455,7 @@ rule summarize_folder:
 
 rule summarize_folder2:
     input:
-        lambda wildcards: expand("{{species}}/mapped_reads_rrna_counts/{name}.sortedb.txt", name=species_dict[wildcards.species])
+        lambda wildcards: expand("{{species}}/sortedb_reads_rrna_counts/{name}.txt", name=species_dict[wildcards.species])
     output:
         "{species}/mapped_reads_rrna_counts/ALL.txt"
     shell:
