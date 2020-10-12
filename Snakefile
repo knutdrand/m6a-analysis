@@ -34,7 +34,7 @@ def pyplot(code):
 
 rule trackhub:
     input:
-        lambda wildcards: expand("trackhub/{{species}}/{folder}_{name}.bw", name=species_dict[wildcards.species], folder=("dedup", "mapped_reads"))
+        lambda wildcards: expand("trackhub/{{species}}/{folder}_{name}.bw", name=species_dict[wildcards.species], folder=("dedup", "sortedb_reads"))
     output:
         "trackhub/{species}/trackDb.txt"
     shell:
@@ -393,22 +393,20 @@ rule create_bw_track:
 
 rule move_to_trackhub_dedup:
     input:
-        "{species}/{folder}_coverage/{name}.bw"
+        "{species}/dedup_coverage/{name}.bw"
     output:
-        "trackhub/{species}/{folder}_{name}.bw"
+        "trackhub/{species}/dedup_{name}.bw"
     wildcard_constraints:
-        folder="[^(/,_)]+",
         species="[^/]+"
     shell:
         "mv {input} {output}"
 
 rule move_to_trackhub:
     input:
-        "{species}/{folder}sortedb_coverage/{name}.bw",
+        "{species}/sortedb_reads_coverage/{name}.bw",
     output:
-        "trackhub/{species}/{folder}_{name}.bw"
+        "trackhub/{species}/sortedb_reads_{name}.bw"
     wildcard_constraints:
-        folder="mapped_reads",
         species="[^/]+"
     shell:
         "mv {input} {output}"
