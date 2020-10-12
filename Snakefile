@@ -13,6 +13,7 @@ chromosome_grep = "grep -Ew -e 'chr[0-9]{{1,2}}' -e chrX -e chrY"
 # samples = [s.replace(".fastq.gz", "") for s in pd.read_csv("sherif_nels.csv").set_index("filename").index]
 samples = []
 analysis_info = pd.read_csv(config["analysisinfo"]).set_index("Name")
+samples = name=list(analysis_info["IP"]) + list(analysis_info["Input"])
 print(analysis_info)
 print(analysis_info.index)
 print(analysis_info.loc["WT-rep1"])
