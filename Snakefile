@@ -465,7 +465,7 @@ rule count_matrix:
         bam=expand("{species}/sortedb_reads/{sample}.bam", sample=samples),
         anno="../../Data/{species}/annotation.gtf"
     output:
-        "{species}/count_matrix/{sample}.txt"
+        "{species}/count_matrix/all.txt"
     shell:
         "featureCounts -a {input.anno} -o {output} {input.bam}"
 
